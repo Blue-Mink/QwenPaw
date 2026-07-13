@@ -1,0 +1,60 @@
+<%-
+local sys  = require "luci.sys"
+local http = require "luci.http"
+local uci  = require "luci.model.uci".cursor()
+-%>
+
+<div class="cbi-section" style="margin-bottom:10px">
+	<div class="cbi-section-node">
+		<div class="cbi-value" style="display:flex;align-items:center;gap:16px;padding:12px 16px;background:#f8f9fa;border-radius:4px">
+			<div style="font-size:48px;line-height:1">🤖</div>
+			<div style="flex:1">
+				<div style="font-size:16px;font-weight:bold;margin-bottom:4px">
+					QwenPaw <span id="qwenpaw_status_badge" style="display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:normal">检测中...</span>
+				</div>
+				<div style="font-size:13px;color:#666" id="qwenpaw_status_detail">正在获取状态...</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var statusUrl = '<%=luci.dispatcher.build_url("admin","services","qwenpaw","status")%>';
+	var badge = document.getElementById('qwenpaw_status_badge');
+	var detail = document.getElementById('qwenpaw_status_detail');
+
+	function updateStatus() {
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState == 4 && xhr.status == 200) {
+				try {
+					var s = JSON.parse(xhr.responseText);
+					if (s.running) {
+						badge.textContent = '运行中';
+						badge.style.background = '#e8f5e9';
+						badge.style.color = '#2e7d32';
+						var health = s.http_ok ? '✅ HTTP 正常' : '⚠️ HTTP 未响应';
+						detail.innerHTML = '端口: ' + s.port + ' | ' + health;
+					} else {
+						badge.textContent = '已停止';
+						badge.style.background = '#ffebee';
+						badge.style.color = '#c62828';
+						detail.textContent = 'QwenPaw 容器未运行';
+					}
+				} catch(e) {
+					badge.textContent = '获取失败';
+					detail.textContent = '无法获取状态信息';
+				}
+			}
+		};
+		xhr.open('GET', statusUrl, true);
+		xhr.send();
+	}
+
+	updateStatus();
+	setInterval(updateStatus, 10000);
+})();
+//]]>
+</script>

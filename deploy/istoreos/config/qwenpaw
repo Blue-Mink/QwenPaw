@@ -1,0 +1,4 @@
+config qwenpaw 'config'
+	option enabled '1'
+	option port '19093'
+	option data_path '/root/.qwenpaw/'

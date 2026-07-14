@@ -12,7 +12,7 @@
 3. [构建 QwenPaw 镜像](#3-构建-qwenpaw-镜像)
 4. [创建并启动容器](#4-创建并启动容器)
 5. [配置与验证](#5-配置与验证)
-6. [从 NAS 同步配置（可选）](#6-从-nas-同步配置可选)
+6. [从其他实例同步配置（可选）](#6-从-其他实例同步配置可选)
 7. [常见问题排查](#7-常见问题排查)
 8. [附录：完整命令速查](#8-附录完整命令速查)
 
@@ -22,7 +22,7 @@
 
 ### 拓扑
 ```
-互联网 → 主路由(192.168.3.1) → NAS服务器
+互联网 → 主路由(192.168.3.1) → 
                                → iStoreOS旁路由(192.168.3.125)
                                        ↓
                                  Docker容器(qwenpaw:1.1.12)
@@ -116,11 +116,11 @@ ls -la /etc/rc.d/S99dockerd
 ### 3.1 拉取 Python 基础镜像
 
 ```
-旁路由本身无 Docker Hub 加速，可借助 NAS 上已有的 kspeeder 加速器：
+旁路由本身无 Docker Hub 加速，可通过以下方案加速：
 
-**方式 A：NAS 上拉取并传输（推荐）**
+**方式 A：从已有镜像导出导入（推荐）**
 ```bash
-# 在 NAS 上拉取 python:3.10-slim（通过 kspeeder 加速）
+# 在源机器上拉取 python:3.10-slim（通过任意加速器）
 docker pull 127.0.0.1:5443/library/python:3.10-slim
 
 # 重新打标签
@@ -310,9 +310,9 @@ docker restart qwenpaw
 
 ---
 
-## 6. 从 NAS 同步配置（可选）
+## 6. 从其他实例同步配置（可选）
 
-如果 NAS 上已有 QwenPaw 实例，可以通过同步脚本将配置复制到旁路由。
+如果其他设备已有 QwenPaw 实例，可以通过同步脚本将配置复制到旁路由。
 
 ### 6.1 同步脚本
 
@@ -320,7 +320,7 @@ docker restart qwenpaw
 
 ```
 执行流程：
-  ① 备份旁路由当前配置 → ② 打包本机(NAS)配置
+  ① 备份旁路由当前配置 → ② 打包源实例配置
   → ③ SCP 传输到旁路由 → ④ 解压并重启容器
   → ⑤ 拉起 QwenPaw → ⑥ 重试验证(HTTP 200)
 
@@ -382,9 +382,7 @@ docker pull 127.0.0.1:5443/library/python:3.10-slim
 # 备用公共加速源
 docker pull docker.1ms.run/library/python:3.10-slim
 
-# 或从 NAS 导出导入（推荐）
-# NAS: docker save python:3.10-slim | gzip > /tmp/py310.tar.gz
-# NAS → 旁路由: scp /tmp/py310.tar.gz root@192.168.3.125:/tmp/
+# 传输到目标旁路由: scp /tmp/py310.tar.gz root@192.168.3.125:/tmp/
 # 旁路由: docker load < /tmp/py310.tar.gz
 ```
 

@@ -1,0 +1,36 @@
+{
+  "name": "qwenpaw-monitor",
+  "version": "1.0.0",
+  "description": "QwenPaw 状态巡检 Skill（旁路由专用）: 检查容器状态、端口、配置、QQ频道、自启动和保活机制。",
+  "enabled": true,
+  "tags": ["运维", "巡检", "旁路由", "保活"],
+  "agent_selector": {
+    "model": "*",
+    "capabilities": ["bash", "python"]
+  },
+  "entry": {
+    "main": "monitor.py",
+    "type": "python"
+  },
+  "params": [
+    {
+      "name": "output_format",
+      "type": "string",
+      "enum": ["text", "json"],
+      "default": "text",
+      "description": "输出格式：文本或 JSON"
+    },
+    {
+      "name": "check_qq",
+      "type": "boolean",
+      "default": true,
+      "description": "是否检查 QQ 频道状态"
+    },
+    {
+      "name": "log_lines",
+      "type": "number",
+      "default": 200,
+      "description": "扫描最近 N 行日志"
+    }
+  ]
+}
